@@ -1,4 +1,4 @@
-package app.BigOExamples;
+package app.bigOExamples;
 
 public class BigOExamples {
 
