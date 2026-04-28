@@ -1,6 +1,6 @@
 package app.algoritms.cycleDetektor;
 
-import app.algoritms.Node;
+import app.algoritms.cycleDetektor.Node;
 
 import static app.algoritms.cycleDetektor.ListFactory.hasCycle;
 
