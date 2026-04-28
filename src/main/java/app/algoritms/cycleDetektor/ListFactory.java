@@ -1,4 +1,7 @@
-package app.algoritms;
+package app.algoritms.cycleDetektor;
+
+import app.algoritms.Node;
+
 public class ListFactory {
 
     // Bygger en liste af int-værdier

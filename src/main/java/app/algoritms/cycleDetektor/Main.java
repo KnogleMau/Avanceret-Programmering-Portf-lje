@@ -1,6 +1,8 @@
-package app.algoritms;
+package app.algoritms.cycleDetektor;
 
-import static app.algoritms.ListFactory.hasCycle;
+import app.algoritms.Node;
+
+import static app.algoritms.cycleDetektor.ListFactory.hasCycle;
 
 public class Main {
 

@@ -1,4 +1,4 @@
-package app.algoritms;
+package app.algoritms.cycleDetektor;
 
 class Node {
     int value;
