@@ -10,14 +10,23 @@ public class SearchAndSort {
         int arr1[] = {64, 34, 25, 12, 22, 11, 90, 12, 31, 99, 63, 23, 1, 6, 87, 65 };
         List<Integer> arr = new ArrayList<>(List.of(64, 34, 25, 12, 22, 11, 90, 12, 31, 99, 63, 23, 1, 6, 87, 65 ));
 
-       // bubbleSort(arr);
-        //mergeSortList(arr1);
-        //quickSort(arr,0, arr.size() - 1);
+        bubbleSort(arr1); // O(n2)
+        //mergeSortList(arr1); // O(LogN)
+        quickSort(arr,0, arr.size() - 1); // O(LogN) men owrst case O(n2)
 
+        System.out.println("QuickSort:");
         for(int i = 0; i < arr.size(); i++){
             System.out.print(arr.get(i) + " ");
         }
+
+        System.out.println("\nBubblesort/MergeSort:");
+        for(int i = 0; i < arr1.length; i++){
+            System.out.print(arr1[i] + " ");
+        }
+
     }
+
+
 
     private static void bubbleSort(int arr[]){
         int n = arr.length;
@@ -28,6 +37,7 @@ public class SearchAndSort {
                   swap(arr, j,j + 1);
                 }
             }
+
         }
 
     }

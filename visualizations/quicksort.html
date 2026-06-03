@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<title>Quicksort visualisering</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  h1 { color: #f9c74f; margin-top: 0; }
+  h3 { color: #89b4fa; margin-top: 30px; }
+
+  .controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  button {
+    padding: 8px 16px;
+    background: #313244;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  button:hover { background: #45475a; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  input[type="text"] {
+    padding: 8px;
+    background: #313244;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 280px;
+    font-family: inherit;
+  }
+  label { font-size: 14px; }
+
+  .array-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 260px;
+    margin: 20px 0 0 0;
+    padding: 20px;
+    background: #181825;
+    border-radius: 8px;
+  }
+  .bar {
+    width: 48px;
+    background: #585b70;
+    color: white;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.25s ease;
+    padding-top: 6px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .bar.pivot   { background: #f9c74f; color: #1e1e2e; }
+  .bar.checking{ background: #89b4fa; color: #1e1e2e; }
+  .bar.small   { background: #a6e3a1; color: #1e1e2e; }
+  .bar.inactive{ background: #45475a; opacity: 0.5; }
+  .bar.locked  { background: #6c7086; opacity: 0.45; }
+  .bar.done    { background: #a6e3a1; color: #1e1e2e; }
+
+  .labels {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .label-cell {
+    width: 48px;
+    text-align: center;
+    font-size: 11px;
+    color: #cdd6f4;
+    min-height: 32px;
+    line-height: 1.3;
+  }
+  .label-cell .idx { color: #6c7086; }
+  .label-cell .ptr { color: #f9c74f; font-weight: bold; }
+
+  .info {
+    background: #181825;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    min-height: 70px;
+    border-left: 4px solid #89b4fa;
+  }
+  .step-counter { color: #f9c74f; font-weight: bold; margin-bottom: 6px; }
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+    font-size: 13px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+  }
+
+  .pseudocode {
+    background: #181825;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .pseudocode .pc { padding: 2px 6px; border-radius: 3px; display: inline-block; }
+  .pseudocode .pc.active { background: #f9c74f; color: #1e1e2e; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h1>Quicksort — trin for trin</h1>
+  <p>Pivot er altid det <strong>sidste element</strong> i det aktive område (som i din Java-kode).</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#f9c74f"></div>Pivot</div>
+    <div class="legend-item"><div class="legend-color" style="background:#89b4fa"></div>j (tjekkes nu)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div>≤ pivot (small zone)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#585b70"></div>Aktiv, ikke klassificeret endnu</div>
+    <div class="legend-item"><div class="legend-color" style="background:#6c7086;opacity:0.45"></div>Låst på endelig plads</div>
+    <div class="legend-item"><div class="legend-color" style="background:#45475a;opacity:0.5"></div>Venter på senere rekursion</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="inputArr" value="7,2,9,4,5,1,8,3,6">
+    <button onclick="resetArray()">Nyt array</button>
+    <button id="prevBtn" onclick="prev()">← Forrige</button>
+    <button id="nextBtn" onclick="next()">Næste →</button>
+    <button id="autoBtn" onclick="toggleAuto()">▶ Auto-play</button>
+    <label>Hastighed:
+      <select id="speed" onchange="updateSpeed()">
+        <option value="1200">Langsom</option>
+        <option value="700" selected>Normal</option>
+        <option value="300">Hurtig</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="array-container" id="arrayContainer"></div>
+  <div class="labels" id="labelsContainer"></div>
+
+  <div class="info">
+    <div class="step-counter" id="stepCounter">Skridt 0</div>
+    <div id="explanation">Klik "Næste" for at starte.</div>
+  </div>
+
+  <h3>Pseudokode</h3>
+  <div class="pseudocode">
+    <div><span class="pc" id="pc-qs">quickSort(arr, low, high):</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-if">if low &lt; high:</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="pc" id="pc-part">pivotIdx = partition(arr, low, high)</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="pc" id="pc-left">quickSort(arr, low, pivotIdx - 1)</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="pc" id="pc-right">quickSort(arr, pivotIdx + 1, high)</span></div>
+    <br>
+    <div><span class="pc" id="pc-p">partition(arr, low, high):</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-pv">pivotValue = arr[high]</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-i">i = low - 1</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-for">for j = low ... high - 1:</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="pc" id="pc-cmp">if arr[j] &lt;= pivotValue:</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="pc" id="pc-swap1">i++; swap(arr[i], arr[j])</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-swap2">swap(arr[i+1], arr[high])</span></div>
+    <div>&nbsp;&nbsp;<span class="pc" id="pc-ret">return i + 1</span></div>
+  </div>
+
+<script>
+  let steps = [];
+  let currentStep = 0;
+  let autoInterval = null;
+  let speed = 700;
+
+  function generateSteps(arr) {
+    const a = [...arr];
+    const out = [];
+    const locked = new Set();
+
+    function snap(state) {
+      out.push({
+        arr: [...a],
+        locked: new Set(locked),
+        ...state
+      });
+    }
+
+    function quickSort(low, high) {
+      if (low < high) {
+        snap({
+          low, high, pivot: high,
+          explanation: `quickSort(${low}, ${high}). Området har ${high - low + 1} elementer. Vælger sidste element (arr[${high}] = ${a[high]}) som pivot.`,
+          highlight: 'pc-qs'
+        });
+        const p = partition(low, high);
+        locked.add(p);
+        snap({
+          low, high, pivot: p,
+          explanation: `Partition færdig. Pivoten ${a[p]} står nu på sin endelige plads (indeks ${p}). Alt til venstre er ≤ ${a[p]}, alt til højre er > ${a[p]}.`,
+          highlight: 'pc-part',
+          justLocked: p
+        });
+        quickSort(low, p - 1);
+        quickSort(p + 1, high);
+      } else if (low === high) {
+        locked.add(low);
+        snap({
+          low, high, justLocked: low,
+          explanation: `quickSort(${low}, ${low}). Kun ét element — per definition sorteret. Låser indeks ${low}.`,
+          highlight: 'pc-if'
+        });
+      }
+    }
+
+    function partition(low, high) {
+      const pivotValue = a[high];
+      let i = low - 1;
+      snap({
+        low, high, pivot: high, i,
+        explanation: `partition(${low}, ${high}). pivotValue = ${pivotValue}, i = ${i} (grænse for "≤ pivot"-zonen).`,
+        highlight: 'pc-pv'
+      });
+
+      for (let j = low; j < high; j++) {
+        snap({
+          low, high, pivot: high, i, j,
+          explanation: `j = ${j}: sammenligner arr[${j}] = ${a[j]} med pivot ${pivotValue}.`,
+          highlight: 'pc-cmp'
+        });
+        if (a[j] <= pivotValue) {
+          i++;
+          if (i !== j) {
+            [a[i], a[j]] = [a[j], a[i]];
+            snap({
+              low, high, pivot: high, i, j,
+              explanation: `${a[i]} ≤ ${pivotValue}. i bliver ${i}, og vi bytter arr[${i}] og arr[${j}] så det lille element ryger ind i "small zone".`,
+              highlight: 'pc-swap1'
+            });
+          } else {
+            snap({
+              low, high, pivot: high, i, j,
+              explanation: `${a[i]} ≤ ${pivotValue}. i bliver ${i}. i == j, så ingen bytning nødvendig — elementet er allerede på rette side.`,
+              highlight: 'pc-swap1'
+            });
+          }
+        } else {
+          snap({
+            low, high, pivot: high, i, j,
+            explanation: `${a[j]} > ${pivotValue}. Lader være med at flytte den.`,
+            highlight: 'pc-cmp'
+          });
+        }
+      }
+
+      const newPivotIdx = i + 1;
+      if (newPivotIdx !== high) {
+        [a[newPivotIdx], a[high]] = [a[high], a[newPivotIdx]];
+      }
+      snap({
+        low, high, pivot: newPivotIdx, i,
+        explanation: `Loop slut. Bytter pivoten (arr[${high}]) ind på indeks ${newPivotIdx} — grænsen mellem "≤ pivot" og "> pivot".`,
+        highlight: 'pc-swap2'
+      });
+
+      return newPivotIdx;
+    }
+
+    quickSort(0, a.length - 1);
+    snap({
+      explanation: `Færdig! Hele arrayet er sorteret.`,
+      allSorted: true
+    });
+
+    return out;
+  }
+
+  function render() {
+    const step = steps[currentStep];
+    const container = document.getElementById('arrayContainer');
+    const labels = document.getElementById('labelsContainer');
+
+    container.innerHTML = '';
+    labels.innerHTML = '';
+
+    const max = Math.max(...step.arr);
+
+    step.arr.forEach((val, idx) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = (val / max * 200 + 30) + 'px';
+      bar.textContent = val;
+
+      if (step.allSorted) {
+        bar.classList.add('done');
+      } else {
+        const inActive = step.low !== undefined && idx >= step.low && idx <= step.high;
+        if (step.locked && step.locked.has(idx)) {
+          bar.classList.add('locked');
+        } else if (!inActive) {
+          bar.classList.add('inactive');
+        }
+
+        if (inActive && step.i !== undefined && idx >= step.low && idx <= step.i && idx !== step.pivot) {
+          bar.classList.remove('inactive');
+          bar.classList.add('small');
+        }
+        if (step.j !== undefined && idx === step.j && idx !== step.pivot) {
+          bar.classList.remove('inactive', 'small');
+          bar.classList.add('checking');
+        }
+        if (step.pivot !== undefined && idx === step.pivot) {
+          bar.classList.remove('inactive', 'small', 'checking', 'locked');
+          bar.classList.add('pivot');
+        }
+      }
+
+      container.appendChild(bar);
+
+      const label = document.createElement('div');
+      label.className = 'label-cell';
+      const markers = [];
+      if (idx === step.low) markers.push('low');
+      if (idx === step.high && step.high !== step.low) markers.push('high');
+      if (idx === step.pivot) markers.push('pivot');
+      if (idx === step.i) markers.push('i');
+      if (idx === step.j && step.j !== step.pivot) markers.push('j');
+      label.innerHTML = `<div class="idx">${idx}</div>` +
+        (markers.length ? `<div class="ptr">${markers.join(',')}</div>` : '');
+      labels.appendChild(label);
+    });
+
+    document.getElementById('stepCounter').textContent = `Skridt ${currentStep + 1} / ${steps.length}`;
+    document.getElementById('explanation').textContent = step.explanation;
+
+    document.querySelectorAll('.pseudocode .pc').forEach(el => el.classList.remove('active'));
+    if (step.highlight) {
+      const el = document.getElementById(step.highlight);
+      if (el) el.classList.add('active');
+    }
+
+    document.getElementById('prevBtn').disabled = currentStep === 0;
+    document.getElementById('nextBtn').disabled = currentStep === steps.length - 1;
+  }
+
+  function next() {
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      render();
+    } else {
+      stopAuto();
+    }
+  }
+
+  function prev() {
+    if (currentStep > 0) {
+      currentStep--;
+      render();
+    }
+  }
+
+  function resetArray() {
+    const input = document.getElementById('inputArr').value;
+    const arr = input.split(',')
+      .map(s => parseInt(s.trim()))
+      .filter(n => !isNaN(n));
+    if (arr.length === 0) return;
+    steps = generateSteps(arr);
+    currentStep = 0;
+    stopAuto();
+    render();
+  }
+
+  function updateSpeed() {
+    speed = parseInt(document.getElementById('speed').value);
+    if (autoInterval) {
+      stopAuto();
+      toggleAuto();
+    }
+  }
+
+  function toggleAuto() {
+    if (autoInterval) {
+      stopAuto();
+    } else {
+      autoInterval = setInterval(next, speed);
+      document.getElementById('autoBtn').textContent = '⏸ Pause';
+    }
+  }
+
+  function stopAuto() {
+    if (autoInterval) {
+      clearInterval(autoInterval);
+      autoInterval = null;
+      document.getElementById('autoBtn').textContent = '▶ Auto-play';
+    }
+  }
+
+  resetArray();
+</script>
+</body>
+</html>

@@ -65,7 +65,10 @@ public class MazeSolver {
         MazeNode destination = byer.get("Sydby");
 
         System.out.println("Finder korteste vej fra Nordby til Sydby...");
+        System.out.println("Manhatten");
         findShortestPath(source, destination, byer, new ManhattenHeuristic());
+        System.out.println("EuclidiskHeristic");
+        findShortestPath(source, destination, byer, new EuclidiskHeuristic());
     }
 
     // Manhattan-afstand som heuristik
