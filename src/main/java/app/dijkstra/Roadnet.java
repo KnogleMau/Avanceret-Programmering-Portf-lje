@@ -38,13 +38,10 @@ public class Roadnet {
 
 
     public static void findShortestPath(WeightedNode source, WeightedNode destination) {
-        // Hver node og den node vi kom fra. Bruges til at rekonstruere ruten til sidst.
         Map<WeightedNode, WeightedNode> prev = new HashMap<>();
 
-        // Den korteste kendte afstand fra startbyen til hver by
         Map<WeightedNode, Integer> dist = new HashMap<>();
 
-        // Byer vi er færdige med — afstanden til disse er låst fast
         Set<WeightedNode> visited = new LinkedHashSet<>();
 
         // Køen sorterer efter dist fordi NodeWithDist implementerer Comparable
@@ -60,7 +57,6 @@ public class Roadnet {
         while (!queue.isEmpty()) {
             NodeWithDist current = queue.poll();
 
-            // Hop forældede køposter over (vi har allerede behandlet noden via en kortere vej)
             if (visited.contains(current.node)) continue;
 
             System.out.println("Trin " + trin++ + ": Besøger " + current.node.getName()
