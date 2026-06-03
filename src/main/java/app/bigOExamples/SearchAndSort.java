@@ -11,8 +11,8 @@ public class SearchAndSort {
         List<Integer> arr = new ArrayList<>(List.of(64, 34, 25, 12, 22, 11, 90, 12, 31, 99, 63, 23, 1, 6, 87, 65 ));
 
        // bubbleSort(arr);
-        mergeSortList(arr1);
-        quickSort(arr,0, arr.size() - 1);
+        //mergeSortList(arr1);
+        //quickSort(arr,0, arr.size() - 1);
 
         for(int i = 0; i < arr.size(); i++){
             System.out.print(arr.get(i) + " ");

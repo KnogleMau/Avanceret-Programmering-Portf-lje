@@ -1,7 +1,5 @@
 package app.designpatterns.exercises.decorator;
 
-import designpatterns.exercises.decorator.TextWriter;
-
 import java.time.LocalDateTime;
 
 public class TimestampDecorator implements TextWriter {

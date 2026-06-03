@@ -49,7 +49,6 @@ public class ListComparison {
         System.out.println("ms: " + (end - start));
 
         System.out.println("Add:");
-        System.out.println("ArrayList:");
         start = System.currentTimeMillis();
         linkedList.add(250000, 99);
         end = System.currentTimeMillis();
